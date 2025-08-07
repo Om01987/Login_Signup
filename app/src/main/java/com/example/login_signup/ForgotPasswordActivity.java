@@ -60,18 +60,29 @@ public class ForgotPasswordActivity extends AppCompatActivity {
         // Input validation
         if (emailStr.isEmpty()) {
             textInputLayoutEmail.setError("Email is required");
+            editTextEmailFP.requestFocus();
             return;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(emailStr).matches()) {
             textInputLayoutEmail.setError("Enter a valid email address");
+            editTextEmailFP.requestFocus();
             return;
         } else {
             textInputLayoutEmail.setError(null);
         }
 
-        // Simulate sending: show progress, then show sent message and clear field
+        // ===== SQLite Email Verification =====
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        if (!dbHelper.checkEmailExists(emailStr)) {
+            textInputLayoutEmail.setError("This email is not registered. Please sign up first.");
+            editTextEmailFP.requestFocus();
+            return;
+        }
+
+        // Email exists in database, proceed with reset simulation
         progressBar.setVisibility(View.VISIBLE);
         btnSend.setEnabled(false);
         editTextEmailFP.setEnabled(false);
+        textInputLayoutEmail.setError(null); // Clear any previous errors
 
         new Handler().postDelayed(() -> {
             progressBar.setVisibility(View.GONE);
@@ -93,7 +104,19 @@ public class ForgotPasswordActivity extends AppCompatActivity {
     }
 
     private void handleResend() {
-        if (lastEmailSent.isEmpty()) return;
+        if (lastEmailSent.isEmpty()) {
+            Toast.makeText(this, "No email to resend to", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // Double-check email still exists in database before resending
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        if (!dbHelper.checkEmailExists(lastEmailSent)) {
+            textConfirmation.setText("Email no longer registered");
+            textSendAgain.setVisibility(View.GONE);
+            Toast.makeText(this, "Email no longer registered", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         // Show progress and simulate resend
         progressBar.setVisibility(View.VISIBLE);

@@ -5,14 +5,9 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
-import java.lang.reflect.Type;
-import java.util.Map;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -39,13 +34,9 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        SharedPreferences usersPrefs = getSharedPreferences("users", MODE_PRIVATE);
-        String usersJson = usersPrefs.getString("users_data", "{}");
-        Gson gson = new Gson();
-        Type type = new TypeToken<Map<String, User>>(){}.getType();
-        Map<String, User> users = gson.fromJson(usersJson, type);
-
-        User currentUser = users.get(loggedEmail);
+        // ===== SQLite Data Retrieval =====
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+        User currentUser = dbHelper.getUserByEmail(loggedEmail);
 
         if (currentUser != null) {
             textUserEmail.setText("Email: " + currentUser.email);
@@ -53,10 +44,18 @@ public class ProfileActivity extends AppCompatActivity {
             textUserId.setText("User ID: " + currentUser.id);
         } else {
             textUserEmail.setText("User details not found.");
+            Toast.makeText(this, "Error: User data not found", Toast.LENGTH_SHORT).show();
+
+            // This shouldn't happen, but if it does, redirect to login
+            session.edit().clear().apply(); // Clear corrupted session
+            startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
+            finish();
+            return;
         }
 
         btnLogout.setOnClickListener(v -> {
-            session.edit().clear().apply(); // clear session
+            session.edit().clear().apply(); // Clear session
+            Toast.makeText(ProfileActivity.this, "Logged out successfully!", Toast.LENGTH_SHORT).show();
             startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
             finish();
         });

@@ -22,10 +22,10 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import android.content.SharedPreferences;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.util.Map;
-import java.lang.reflect.Type;
+//import com.google.gson.Gson;
+//import com.google.gson.reflect.TypeToken;
+//import java.util.Map;
+//import java.lang.reflect.Type;
 
 
 public class LoginActivity extends AppCompatActivity {
@@ -90,7 +90,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(intent);
         });
     }
-
+/*
     private void validateAndLogin() {
         // Reset errors and status
         layoutEmail.setError(null);
@@ -233,4 +233,91 @@ public class LoginActivity extends AppCompatActivity {
          //  show a toast
          Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
     }
+
+ */
+private void validateAndLogin() {
+    // Reset errors and status
+    layoutEmail.setError(null);
+    layoutPassword.setError(null);
+    layoutMobile.setError(null);
+    textStatus.setVisibility(View.GONE);
+
+    String email = editEmail.getText() != null ? editEmail.getText().toString().trim() : "";
+    String password = editPassword.getText() != null ? editPassword.getText().toString().trim() : "";
+    String mobile = editMobile.getText() != null ? editMobile.getText().toString().trim() : "";
+
+    // Email validation
+    if (TextUtils.isEmpty(email)) {
+        layoutEmail.setError("Email is required");
+        editEmail.requestFocus();
+        return;
+    } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+        layoutEmail.setError("Enter a valid email");
+        editEmail.requestFocus();
+        return;
+    }
+
+    // Password validation
+    if (TextUtils.isEmpty(password)) {
+        layoutPassword.setError("Password is required");
+        editPassword.requestFocus();
+        return;
+    } else if (password.length() < 8) {
+        layoutPassword.setError("Password must be at least 8 characters");
+        editPassword.requestFocus();
+        return;
+    }
+
+    // Mobile validation
+    if (TextUtils.isEmpty(mobile)) {
+        layoutMobile.setError("Mobile number required");
+        editMobile.requestFocus();
+        return;
+    } else if (mobile.length() != 10) {
+        layoutMobile.setError("Enter a 10-digit mobile number");
+        editMobile.requestFocus();
+        return;
+    } else if (mobile.startsWith("0")) {
+        layoutMobile.setError("Mobile number cannot start with 0");
+        editMobile.requestFocus();
+        return;
+    } else if (!mobile.matches("\\d{10}")) {
+        layoutMobile.setError("Only digits allowed");
+        editMobile.requestFocus();
+        return;
+    }
+
+    // ===== SQLite Authentication =====
+    DatabaseHelper dbHelper = new DatabaseHelper(this);
+
+    // Check if user credentials are valid
+    boolean isValidUser = dbHelper.checkUser(email, password, mobile);
+
+    if (isValidUser) {
+        // Save login session information
+        SharedPreferences session = getSharedPreferences("session", MODE_PRIVATE);
+        session.edit()
+                .putBoolean("is_logged_in", true)
+                .putString("logged_in_email", email)
+                .apply();
+
+        Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
+
+        // Redirect to ProfileActivity
+        Intent intent = new Intent(LoginActivity.this, ProfileActivity.class);
+        startActivity(intent);
+        finish();
+    } else {
+        // Check specific error for better UX
+        if (!dbHelper.checkEmailExists(email)) {
+            layoutEmail.setError("Email not registered");
+            editEmail.requestFocus();
+        } else {
+            // Email exists but password or mobile is wrong
+            layoutPassword.setError("Incorrect password or mobile number");
+            editPassword.requestFocus();
+        }
+    }
+}
+
 }

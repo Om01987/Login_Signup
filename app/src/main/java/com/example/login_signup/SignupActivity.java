@@ -20,12 +20,14 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
 import android.content.SharedPreferences;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.UUID;
-import java.lang.reflect.Type;
+import android.widget.Toast;
+
+//import com.google.gson.Gson;
+//import com.google.gson.reflect.TypeToken;
+//import java.util.Map;
+//import java.util.HashMap;
+//import java.util.UUID;
+//import java.lang.reflect.Type;
 
 
 public class SignupActivity extends AppCompatActivity {
@@ -91,7 +93,7 @@ public class SignupActivity extends AppCompatActivity {
     private boolean hasSpecialChar(String pwd) {
         return pwd != null && pwd.matches(".*[^a-zA-Z0-9].*");
     }
-
+/*
     private void validateAndRegister() {
         // Reset errors and status
         layoutEmail.setError(null);
@@ -238,4 +240,124 @@ public class SignupActivity extends AppCompatActivity {
 //        editMobile.setText("");
 //        editEmail.requestFocus();
     }
+
+ */
+
+    private void validateAndRegister() {
+        // Reset errors and status
+        layoutEmail.setError(null);
+        layoutPassword.setError(null);
+        layoutConfirmPassword.setError(null);
+        layoutMobile.setError(null);
+        textStatus.setVisibility(TextView.GONE);
+
+        String email = editEmail.getText() != null ? editEmail.getText().toString().trim() : "";
+        String password = editPassword.getText() != null ? editPassword.getText().toString().trim() : "";
+        String confirmPassword = editConfirmPassword.getText() != null ? editConfirmPassword.getText().toString().trim() : "";
+        String mobile = editMobile.getText() != null ? editMobile.getText().toString().trim() : "";
+
+        // Email validation
+        if (TextUtils.isEmpty(email)) {
+            layoutEmail.setError("Email is required");
+            editEmail.requestFocus();
+            return;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            layoutEmail.setError("Enter a valid email");
+            editEmail.requestFocus();
+            return;
+        }
+
+        // Advanced password validation
+        StringBuilder errorBuilder = new StringBuilder();
+        if (!isLongEnough(password)) {
+            errorBuilder.append("A password must have at least ten characters.\n");
+        }
+        if (!hasUppercase(password)) {
+            errorBuilder.append("A password must include at least one capital letter.\n");
+        }
+        if (!hasLowercase(password)) {
+            errorBuilder.append("A password must include at least one small letter.\n");
+        }
+        if (!hasDigit(password)) {
+            errorBuilder.append("A password must include at least one digit.\n");
+        }
+        if (!hasSpecialChar(password)) {
+            errorBuilder.append("A password must include at least one special character.\n");
+        }
+        if (errorBuilder.length() > 0) {
+            layoutPassword.setError(errorBuilder.toString().trim());
+            editPassword.requestFocus();
+            return;
+        } else {
+            layoutPassword.setError(null);
+        }
+
+        // Confirm password
+        if (TextUtils.isEmpty(confirmPassword)) {
+            layoutConfirmPassword.setError("Please confirm password");
+            editConfirmPassword.requestFocus();
+            return;
+        } else if (!confirmPassword.equals(password)) {
+            layoutConfirmPassword.setError("Passwords do not match");
+            editConfirmPassword.requestFocus();
+            return;
+        } else {
+            layoutConfirmPassword.setError(null);
+        }
+
+        // Mobile validation
+        if (TextUtils.isEmpty(mobile)) {
+            layoutMobile.setError("Mobile number required");
+            editMobile.requestFocus();
+            return;
+        } else if (mobile.length() != 10) {
+            layoutMobile.setError("Enter a 10-digit mobile number");
+            editMobile.requestFocus();
+            return;
+        } else if (mobile.startsWith("0")) {
+            layoutMobile.setError("Mobile number cannot start with 0");
+            editMobile.requestFocus();
+            return;
+        } else if (!mobile.matches("\\d{10}")) {
+            layoutMobile.setError("Only digits allowed");
+            editMobile.requestFocus();
+            return;
+        } else {
+            layoutMobile.setError(null);
+        }
+
+        // ===== SQLite Integration =====
+        DatabaseHelper dbHelper = new DatabaseHelper(this);
+
+        // Check if email already exists
+        if (dbHelper.checkEmailExists(email)) {
+            layoutEmail.setError("This email is already registered.");
+            editEmail.requestFocus();
+            return;
+        }
+
+        // Add user to SQLite database
+        boolean isInserted = dbHelper.addUser(email, password, mobile);
+
+        if (isInserted) {
+            // Save login session info (auto login after signup)
+            SharedPreferences session = getSharedPreferences("session", MODE_PRIVATE);
+            session.edit()
+                    .putBoolean("is_logged_in", true)
+                    .putString("logged_in_email", email)
+                    .apply();
+
+            Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show();
+
+            // Redirect to ProfileActivity
+            Intent intent = new Intent(SignupActivity.this, ProfileActivity.class);
+            startActivity(intent);
+            finish();
+        } else {
+            // Registration failed
+            textStatus.setText("Registration failed. Please try again.");
+            textStatus.setVisibility(TextView.VISIBLE);
+        }
+    }
+
 }
