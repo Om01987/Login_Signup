@@ -7,7 +7,6 @@
     android:background="?android:attr/windowBackground"
     android:padding="24dp">
 
-    <!-- Centers card vertically and horizontally -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/profileCard"
         android:layout_width="match_parent"
@@ -25,19 +24,6 @@
             android:orientation="vertical"
             android:gravity="center_horizontal"
             android:padding="24dp">
-
-            <!-- Optional: Profile avatar/icon -->
-            <!-- Uncomment this block if you want an avatar -->
-            <!--
-            <ImageView
-                android:id="@+id/imageProfile"
-                android:layout_width="96dp"
-                android:layout_height="96dp"
-                android:layout_marginBottom="24dp"
-                android:src="@drawable/ic_account_circle_24"
-                android:tint="?attr/colorPrimary"
-                android:contentDescription="@string/profile_avatar"/>
-            -->
 
             <TextView
                 android:id="@+id/textUserEmail"
@@ -70,6 +56,46 @@
                 android:layout_marginBottom="24dp"
                 android:gravity="center"/>
 
+            <TextView
+                android:id="@+id/textFirstName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="First Name: John"
+                android:textSize="18sp"
+                android:textColor="?android:textColorSecondary"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/textLastName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Last Name: Doe"
+                android:textSize="18sp"
+                android:textColor="?android:textColorSecondary"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"/>
+
+            <TextView
+                android:id="@+id/textAddress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Address: 123 Main St"
+                android:textSize="18sp"
+                android:textColor="?android:textColorSecondary"
+                android:layout_marginBottom="24dp"
+                android:gravity="center"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnEditProfile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Edit Profile"
+                android:textAllCaps="false"
+                style="@style/Widget.MaterialComponents.Button"
+                app:cornerRadius="16dp"
+                android:layout_marginBottom="16dp"/>
+
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
@@ -78,6 +104,7 @@
                 android:textAllCaps="false"
                 style="@style/Widget.MaterialComponents.Button"
                 app:cornerRadius="16dp"/>
+
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </FrameLayout>

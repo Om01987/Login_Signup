@@ -6,8 +6,8 @@ import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.inputmethod.EditorInfo;
-import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -19,22 +19,23 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
 
-import android.content.SharedPreferences;
-import android.widget.Toast;
-
-//import com.google.gson.Gson;
-//import com.google.gson.reflect.TypeToken;
-//import java.util.Map;
-//import java.util.HashMap;
-//import java.util.UUID;
-//import java.lang.reflect.Type;
-
-
 public class SignupActivity extends AppCompatActivity {
 
     private TextView textStatus;
-    private TextInputLayout layoutEmail, layoutPassword, layoutConfirmPassword, layoutMobile;
-    private TextInputEditText editEmail, editPassword, editConfirmPassword, editMobile;
+    private TextInputLayout layoutEmail,
+            layoutPassword,
+            layoutConfirmPassword,
+            layoutMobile,
+            layoutFirstName,
+            layoutLastName,
+            layoutAddress;
+    private TextInputEditText editEmail,
+            editPassword,
+            editConfirmPassword,
+            editMobile,
+            editFirstName,
+            editLastName,
+            editAddress;
     private MaterialButton btnSignup;
     private TextView textGoToLogin;
 
@@ -44,27 +45,34 @@ public class SignupActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_signup);
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.signupScroll), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.signupScroll),
+                (v, insets) -> {
+                    Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+                    return insets;
+                });
 
-        textStatus = findViewById(R.id.textSignupStatus);
-        layoutEmail = findViewById(R.id.layoutEmail);
-        layoutPassword = findViewById(R.id.layoutPassword);
-        layoutConfirmPassword = findViewById(R.id.layoutConfirmPassword);
-        layoutMobile = findViewById(R.id.layoutMobile);
-        editEmail = findViewById(R.id.editTextEmail);
-        editPassword = findViewById(R.id.editTextPassword);
-        editConfirmPassword = findViewById(R.id.editTextConfirmPassword);
-        editMobile = findViewById(R.id.editTextMobile);
-        btnSignup = findViewById(R.id.buttonSignup);
-        textGoToLogin = findViewById(R.id.textGoToLogin);
+        textStatus           = findViewById(R.id.textSignupStatus);
+        layoutEmail          = findViewById(R.id.layoutEmail);
+        layoutPassword       = findViewById(R.id.layoutPassword);
+        layoutConfirmPassword= findViewById(R.id.layoutConfirmPassword);
+        layoutMobile         = findViewById(R.id.layoutMobile);
+        layoutFirstName      = findViewById(R.id.layoutFirstName);
+        layoutLastName       = findViewById(R.id.layoutLastName);
+        layoutAddress        = findViewById(R.id.layoutAddress);
 
-        // Defensive: enforce phone number length
+        editEmail            = findViewById(R.id.editTextEmail);
+        editPassword         = findViewById(R.id.editTextPassword);
+        editConfirmPassword  = findViewById(R.id.editTextConfirmPassword);
+        editMobile           = findViewById(R.id.editTextMobile);
+        editFirstName        = findViewById(R.id.editTextFirstName);
+        editLastName         = findViewById(R.id.editTextLastName);
+        editAddress          = findViewById(R.id.editTextAddress);
+
+        btnSignup            = findViewById(R.id.buttonSignup);
+        textGoToLogin        = findViewById(R.id.textGoToLogin);
+
         editMobile.setFilters(new InputFilter[]{new InputFilter.LengthFilter(10)});
-
         editMobile.setOnEditorActionListener((v, actionId, event) -> {
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 validateAndRegister();
@@ -77,287 +85,102 @@ public class SignupActivity extends AppCompatActivity {
         textGoToLogin.setOnClickListener(v -> finish());
     }
 
-    // ----------- Password Validation Requirements -----------
-    private boolean isLongEnough(String pwd) {
-        return pwd != null && pwd.length() >= 10;
-    }
-    private boolean hasUppercase(String pwd) {
-        return pwd != null && pwd.matches(".*[A-Z].*");
-    }
-    private boolean hasLowercase(String pwd) {
-        return pwd != null && pwd.matches(".*[a-z].*");
-    }
-    private boolean hasDigit(String pwd) {
-        return pwd != null && pwd.matches(".*\\d.*");
-    }
-    private boolean hasSpecialChar(String pwd) {
-        return pwd != null && pwd.matches(".*[^a-zA-Z0-9].*");
-    }
-/*
+    // Password validation helpers
+    private boolean isLongEnough(String pwd)      { return pwd != null && pwd.length() >= 10; }
+    private boolean hasUppercase(String pwd)      { return pwd != null && pwd.matches(".*[A-Z].*"); }
+    private boolean hasLowercase(String pwd)      { return pwd != null && pwd.matches(".*[a-z].*"); }
+    private boolean hasDigit(String pwd)          { return pwd != null && pwd.matches(".*\\d.*"); }
+    private boolean hasSpecialChar(String pwd)    { return pwd != null && pwd.matches(".*[^a-zA-Z0-9].*"); }
+
     private void validateAndRegister() {
-        // Reset errors and status
+        // Reset errors
         layoutEmail.setError(null);
         layoutPassword.setError(null);
         layoutConfirmPassword.setError(null);
         layoutMobile.setError(null);
+        layoutFirstName.setError(null);
+        layoutLastName.setError(null);
+        layoutAddress.setError(null);
         textStatus.setVisibility(TextView.GONE);
 
-        String email = editEmail.getText() != null ? editEmail.getText().toString().trim() : "";
-        String password = editPassword.getText() != null ? editPassword.getText().toString().trim() : "";
-        String confirmPassword = editConfirmPassword.getText() != null ? editConfirmPassword.getText().toString().trim() : "";
-        String mobile = editMobile.getText() != null ? editMobile.getText().toString().trim() : "";
+        String email       = editEmail.getText()==null?"":editEmail.getText().toString().trim();
+        String password    = editPassword.getText()==null?"":editPassword.getText().toString().trim();
+        String confirmPwd  = editConfirmPassword.getText()==null?"":editConfirmPassword.getText().toString().trim();
+        String mobile      = editMobile.getText()==null?"":editMobile.getText().toString().trim();
+        String firstName   = editFirstName.getText()==null?"":editFirstName.getText().toString().trim();
+        String lastName    = editLastName.getText()==null?"":editLastName.getText().toString().trim();
+        String address     = editAddress.getText()==null?"":editAddress.getText().toString().trim();
 
-        // Email validation
+        // Email
         if (TextUtils.isEmpty(email)) {
             layoutEmail.setError("Email is required");
-            editEmail.requestFocus();
-            return;
+            editEmail.requestFocus(); return;
         } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             layoutEmail.setError("Enter a valid email");
-            editEmail.requestFocus();
-            return;
+            editEmail.requestFocus(); return;
         }
 
-        // Advanced password validation
-        StringBuilder errorBuilder = new StringBuilder();
-        if (!isLongEnough(password)) {
-            errorBuilder.append("A password must have at least ten characters.\n");
-        }
-        if (!hasUppercase(password)) {
-            errorBuilder.append("A password must include at least one capital letter.\n");
-        }
-        if (!hasLowercase(password)) {
-            errorBuilder.append("A password must include at least one small letter.\n");
-        }
-        if (!hasDigit(password)) {
-            errorBuilder.append("A password must include at least one digit.\n");
-        }
-        if (!hasSpecialChar(password)) {
-            errorBuilder.append("A password must include at least one special character.\n");
-        }
-        if (errorBuilder.length() > 0) {
-            layoutPassword.setError(errorBuilder.toString().trim());
-            editPassword.requestFocus();
-            return;
-        } else {
-            layoutPassword.setError(null);
+        // Password
+        StringBuilder err = new StringBuilder();
+        if (!isLongEnough(password))  err.append("At least 10 characters.\n");
+        if (!hasUppercase(password))  err.append("At least one uppercase letter.\n");
+        if (!hasLowercase(password))  err.append("At least one lowercase letter.\n");
+        if (!hasDigit(password))      err.append("At least one digit.\n");
+        if (!hasSpecialChar(password))err.append("At least one special character.\n");
+        if (err.length()>0) {
+            layoutPassword.setError(err.toString().trim());
+            editPassword.requestFocus(); return;
         }
 
         // Confirm password
-        if (TextUtils.isEmpty(confirmPassword)) {
+        if (TextUtils.isEmpty(confirmPwd)) {
             layoutConfirmPassword.setError("Please confirm password");
-            editConfirmPassword.requestFocus();
-            return;
-        } else if (!confirmPassword.equals(password)) {
+            editConfirmPassword.requestFocus(); return;
+        } else if (!confirmPwd.equals(password)) {
             layoutConfirmPassword.setError("Passwords do not match");
-            editConfirmPassword.requestFocus();
-            return;
-        } else {
-            layoutConfirmPassword.setError(null);
+            editConfirmPassword.requestFocus(); return;
         }
 
-        // Mobile validation
+        // Mobile
         if (TextUtils.isEmpty(mobile)) {
             layoutMobile.setError("Mobile number required");
-            editMobile.requestFocus();
-            return;
-        } else if (mobile.length() != 10) {
-            layoutMobile.setError("Enter a 10-digit mobile number");
-            editMobile.requestFocus();
-            return;
-        } else if (mobile.startsWith("0")) {
-            layoutMobile.setError("Mobile number cannot start with 0");
-            editMobile.requestFocus();
-            return;
-        } else if (!mobile.matches("\\d{10}")) {
-            layoutMobile.setError("Only digits allowed");
-            editMobile.requestFocus();
-            return;
-        } else {
-            layoutMobile.setError(null);
+            editMobile.requestFocus(); return;
+        } else if (!mobile.matches("[1-9]\\d{9}")) {
+            layoutMobile.setError("Enter a valid 10-digit mobile number not starting with 0");
+            editMobile.requestFocus(); return;
         }
 
-        // Success: registered
-//        textStatus.setText("Registered as " + email);
-//        textStatus.setVisibility(TextView.VISIBLE);
+        // Optional fields - no validation required, but trim spaces
+        // firstName, lastName, address may remain blank
 
-        // SAVE REGISTERED USER - for single user only
-
-//        android.content.SharedPreferences prefs = getSharedPreferences("user_prefs", MODE_PRIVATE);
-//        android.content.SharedPreferences.Editor editor = prefs.edit();
-//        editor.putString("email", email);
-//        editor.putString("password", password);
-//        editor.putString("mobile", mobile);
-//        editor.apply();
-
-        // Prepare SharedPreferences for multi-user storage
-        SharedPreferences prefs = getSharedPreferences("users", MODE_PRIVATE);
-        Gson gson = new Gson();
-        String usersJson = prefs.getString("users_data", "{}");
-        Type type = new TypeToken<Map<String, User>>(){}.getType();
-        Map<String, User> users = gson.fromJson(usersJson, type);
-
-        if (users == null) users = new HashMap<>();
-
-        // Prevent duplicate registration
-        if (users.containsKey(email)) {
+        // SQLite integration
+        DatabaseHelper db = new DatabaseHelper(this);
+        if (db.checkEmailExists(email)) {
             layoutEmail.setError("This email is already registered.");
-            editEmail.requestFocus();
-            return;
+            editEmail.requestFocus(); return;
         }
 
-        // Add new user with random id
-        String userId = UUID.randomUUID().toString();
-        User user = new User(userId, email, password, mobile);
-        users.put(email, user);
+        // Insert user with new fields and default role "user"
+        boolean ok = db.addUser(
+                email, password, mobile,
+                firstName, lastName, address,
+                "user"
+        );
 
-        // Save updated user map to SharedPreferences
-        prefs.edit().putString("users_data", gson.toJson(users)).apply();
-
-
-        // Save login session info (auto login after signup)
-        SharedPreferences session = getSharedPreferences("session", MODE_PRIVATE);
-        session.edit()
-                .putBoolean("is_logged_in", true)
-                .putString("logged_in_email", email)
-                .apply();
-
-        // Redirect to ProfileActivity
-        Intent intent = new Intent(SignupActivity.this, ProfileActivity.class);
-        startActivity(intent);
-        finish();
-
-//        // Show success as before
-//        textStatus.setText("Registered as " + email);
-//        textStatus.setVisibility(TextView.VISIBLE);
-
-
-
-        // Clear fields for next registration
-//        editEmail.setText("");
-//        editPassword.setText("");
-//        editConfirmPassword.setText("");
-//        editMobile.setText("");
-//        editEmail.requestFocus();
-    }
-
- */
-
-    private void validateAndRegister() {
-        // Reset errors and status
-        layoutEmail.setError(null);
-        layoutPassword.setError(null);
-        layoutConfirmPassword.setError(null);
-        layoutMobile.setError(null);
-        textStatus.setVisibility(TextView.GONE);
-
-        String email = editEmail.getText() != null ? editEmail.getText().toString().trim() : "";
-        String password = editPassword.getText() != null ? editPassword.getText().toString().trim() : "";
-        String confirmPassword = editConfirmPassword.getText() != null ? editConfirmPassword.getText().toString().trim() : "";
-        String mobile = editMobile.getText() != null ? editMobile.getText().toString().trim() : "";
-
-        // Email validation
-        if (TextUtils.isEmpty(email)) {
-            layoutEmail.setError("Email is required");
-            editEmail.requestFocus();
-            return;
-        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            layoutEmail.setError("Enter a valid email");
-            editEmail.requestFocus();
-            return;
-        }
-
-        // Advanced password validation
-        StringBuilder errorBuilder = new StringBuilder();
-        if (!isLongEnough(password)) {
-            errorBuilder.append("A password must have at least ten characters.\n");
-        }
-        if (!hasUppercase(password)) {
-            errorBuilder.append("A password must include at least one capital letter.\n");
-        }
-        if (!hasLowercase(password)) {
-            errorBuilder.append("A password must include at least one small letter.\n");
-        }
-        if (!hasDigit(password)) {
-            errorBuilder.append("A password must include at least one digit.\n");
-        }
-        if (!hasSpecialChar(password)) {
-            errorBuilder.append("A password must include at least one special character.\n");
-        }
-        if (errorBuilder.length() > 0) {
-            layoutPassword.setError(errorBuilder.toString().trim());
-            editPassword.requestFocus();
-            return;
-        } else {
-            layoutPassword.setError(null);
-        }
-
-        // Confirm password
-        if (TextUtils.isEmpty(confirmPassword)) {
-            layoutConfirmPassword.setError("Please confirm password");
-            editConfirmPassword.requestFocus();
-            return;
-        } else if (!confirmPassword.equals(password)) {
-            layoutConfirmPassword.setError("Passwords do not match");
-            editConfirmPassword.requestFocus();
-            return;
-        } else {
-            layoutConfirmPassword.setError(null);
-        }
-
-        // Mobile validation
-        if (TextUtils.isEmpty(mobile)) {
-            layoutMobile.setError("Mobile number required");
-            editMobile.requestFocus();
-            return;
-        } else if (mobile.length() != 10) {
-            layoutMobile.setError("Enter a 10-digit mobile number");
-            editMobile.requestFocus();
-            return;
-        } else if (mobile.startsWith("0")) {
-            layoutMobile.setError("Mobile number cannot start with 0");
-            editMobile.requestFocus();
-            return;
-        } else if (!mobile.matches("\\d{10}")) {
-            layoutMobile.setError("Only digits allowed");
-            editMobile.requestFocus();
-            return;
-        } else {
-            layoutMobile.setError(null);
-        }
-
-        // ===== SQLite Integration =====
-        DatabaseHelper dbHelper = new DatabaseHelper(this);
-
-        // Check if email already exists
-        if (dbHelper.checkEmailExists(email)) {
-            layoutEmail.setError("This email is already registered.");
-            editEmail.requestFocus();
-            return;
-        }
-
-        // Add user to SQLite database
-        boolean isInserted = dbHelper.addUser(email, password, mobile);
-
-        if (isInserted) {
-            // Save login session info (auto login after signup)
-            SharedPreferences session = getSharedPreferences("session", MODE_PRIVATE);
-            session.edit()
+        if (ok) {
+            // Auto-login
+            getSharedPreferences("session", MODE_PRIVATE)
+                    .edit()
                     .putBoolean("is_logged_in", true)
                     .putString("logged_in_email", email)
                     .apply();
 
             Toast.makeText(this, "Registration successful!", Toast.LENGTH_SHORT).show();
-
-            // Redirect to ProfileActivity
-            Intent intent = new Intent(SignupActivity.this, ProfileActivity.class);
-            startActivity(intent);
+            startActivity(new Intent(this, ProfileActivity.class));
             finish();
         } else {
-            // Registration failed
             textStatus.setText("Registration failed. Please try again.");
             textStatus.setVisibility(TextView.VISIBLE);
         }
     }
-
 }
