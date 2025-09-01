@@ -29,7 +29,7 @@ public class AdminAdapter extends RecyclerView.Adapter<AdminAdapter.ViewHolder> 
     @NonNull @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.activity_admin_adapter, parent, false);
+                .inflate(R.layout.activity_admin_adapter, parent, false); // Fixed: matches your actual file name
         return new ViewHolder(view);
     }
 
@@ -38,31 +38,48 @@ public class AdminAdapter extends RecyclerView.Adapter<AdminAdapter.ViewHolder> 
         User user = users.get(position);
         holder.textEmail.setText("Email: " + user.email);
         holder.textMobile.setText("Mobile: " + user.mobile);
-        holder.textRole.setText("Role: " + user.role);
+        holder.textRole.setText("Role: " + user.role.toUpperCase());
 
+        // Always set up edit button
         holder.btnEdit.setOnClickListener(v -> {
             Intent intent = new Intent(context, EditProfileActivity.class);
             intent.putExtra("email", user.email);
             context.startActivity(intent);
         });
 
-        holder.btnDelete.setOnClickListener(v -> {
-            new AlertDialog.Builder(context)
-                    .setTitle("Confirm Delete")
-                    .setMessage("Delete user " + user.email + "?")
-                    .setPositiveButton("Delete", (dialog, which) -> {
-                        boolean deleted = dbHelper.deleteUserByEmail(user.email);
-                        if (deleted) {
-                            users.remove(position);
-                            notifyItemRemoved(position);
-                            Toast.makeText(context, "User deleted", Toast.LENGTH_SHORT).show();
-                        } else {
-                            Toast.makeText(context, "Delete failed", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null)
-                    .show();
-        });
+        // Handle delete button based on user role
+        if (user.isAdmin()) {
+            // Disable delete for admin users
+            holder.textRole.setTextColor(context.getResources().getColor(android.R.color.holo_red_dark));
+            holder.btnDelete.setEnabled(false);
+            holder.btnDelete.setText("Protected");
+            holder.btnDelete.setAlpha(0.5f); // Make it look disabled
+            holder.btnDelete.setOnClickListener(null); // Remove any existing click listener
+        } else {
+            // Enable delete for regular users
+            holder.textRole.setTextColor(context.getResources().getColor(android.R.color.darker_gray));
+            holder.btnDelete.setEnabled(true);
+            holder.btnDelete.setText("Delete");
+            holder.btnDelete.setAlpha(1.0f);
+
+            holder.btnDelete.setOnClickListener(v -> {
+                new AlertDialog.Builder(context)
+                        .setTitle("Confirm Delete")
+                        .setMessage("Delete user " + user.email + "?")
+                        .setPositiveButton("Delete", (dialog, which) -> {
+                            boolean deleted = dbHelper.deleteUserByEmail(user.email);
+                            if (deleted) {
+                                users.remove(position);
+                                notifyItemRemoved(position);
+                                Toast.makeText(context, "User deleted", Toast.LENGTH_SHORT).show();
+                            } else {
+                                Toast.makeText(context, "Delete failed", Toast.LENGTH_SHORT).show();
+                            }
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+        }
     }
 
     @Override
@@ -78,8 +95,8 @@ public class AdminAdapter extends RecyclerView.Adapter<AdminAdapter.ViewHolder> 
             super(itemView);
             textEmail = itemView.findViewById(R.id.textEmail);
             textMobile= itemView.findViewById(R.id.textMobile);
-            textRole = itemView.findViewById(R.id.textRole);
-            btnEdit = itemView.findViewById(R.id.btnEdit);
+            textRole  = itemView.findViewById(R.id.textRole);
+            btnEdit   = itemView.findViewById(R.id.btnEdit);
             btnDelete = itemView.findViewById(R.id.btnDelete);
         }
     }

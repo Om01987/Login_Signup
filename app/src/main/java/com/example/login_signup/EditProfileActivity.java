@@ -84,9 +84,6 @@ public class EditProfileActivity extends AppCompatActivity {
         String address = editAddress.getText() != null
                 ? editAddress.getText().toString().trim() : "";
 
-        // Optional: validate lengths or non-empty if required
-        // For now, accept empty values
-
         // Fetch existing user object
         User user = dbHelper.getUserByEmail(email);
         if (user == null) {
@@ -102,8 +99,20 @@ public class EditProfileActivity extends AppCompatActivity {
         boolean updated = dbHelper.updateUser(user);
         if (updated) {
             Toast.makeText(this, "Profile updated", Toast.LENGTH_SHORT).show();
-            // Return to profile screen and refresh
-            startActivity(new Intent(this, ProfileActivity.class));
+
+            // Check if current logged-in user is admin for smart redirect
+            SharedPreferences session = getSharedPreferences("session", MODE_PRIVATE);
+            String loggedEmail = session.getString("logged_in_email", null);
+            User currentUser = dbHelper.getUserByEmail(loggedEmail);
+
+            // Redirect based on who is editing
+            if (currentUser != null && currentUser.isAdmin()) {
+                // Admin editing someone's profile -> return to admin user list
+                startActivity(new Intent(this, AdminActivity.class));
+            } else {
+                // Regular user editing own profile -> return to profile
+                startActivity(new Intent(this, ProfileActivity.class));
+            }
             finish();
         } else {
             Toast.makeText(this, "Update failed", Toast.LENGTH_SHORT).show();

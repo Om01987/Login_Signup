@@ -4,42 +4,55 @@
     android:orientation="vertical"
     android:padding="12dp"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="?android:attr/selectableItemBackground"
+    android:layout_marginBottom="8dp">
 
     <TextView
         android:id="@+id/textEmail"
         android:textSize="16sp"
         android:textStyle="bold"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:textColor="?android:textColorPrimary"/>
 
     <TextView
         android:id="@+id/textMobile"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textSize="14sp"
+        android:textColor="?android:textColorSecondary"/>
 
     <TextView
         android:id="@+id/textRole"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"/>
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:textStyle="bold"
+        android:textSize="14sp"/>
 
     <LinearLayout
         android:orientation="horizontal"
-        android:layout_marginTop="8dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp">
 
         <Button
             android:id="@+id/btnEdit"
             android:text="Edit"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:paddingHorizontal="16dp"/>
 
         <Button
             android:id="@+id/btnDelete"
             android:text="Delete"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="12dp"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"/>
+            android:layout_height="wrap_content"
+            android:textAllCaps="false"
+            android:paddingHorizontal="16dp"/>
     </LinearLayout>
 </LinearLayout>
