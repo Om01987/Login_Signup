@@ -6,9 +6,11 @@ import android.os.Bundle;
 import android.text.InputFilter;
 import android.text.TextUtils;
 import android.util.Patterns;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.example.login_signup.BuildConfig;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -151,4 +153,17 @@ public class LoginActivity extends AppCompatActivity {
         finish();
         Toast.makeText(this, "Login successful!", Toast.LENGTH_SHORT).show();
     }
+
+//    public void check(View view) {
+//        Toast.makeText(getApplicationContext(), String.valueOf(BuildConfig.IS_PAID), Toast.LENGTH_SHORT).show();
+//    }
+
+    public void check(View view) {
+        if (BuildConfig.IS_PAID) {
+            Toast.makeText(this, "Paid version enabled", Toast.LENGTH_SHORT).show();
+        } else {
+            Toast.makeText(this, "Currently on Free version", Toast.LENGTH_SHORT).show();
+        }
+    }
+
 }
